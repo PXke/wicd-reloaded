@@ -16,7 +16,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import gtk
+from gi.repository import Gtk
 import os.path
 
 import wicd.wpath as wpath
@@ -25,16 +25,16 @@ HAS_NOTIFY = True
 try:
     import pynotify
     if not pynotify.init("Wicd"):
-        print 'Could not initalize pynotify'
+        print('Could not initalize pynotify')
         HAS_NOTIFY = False
 except ImportError:
-    print "Importing pynotify failed, notifications disabled."
+    print("Importing pynotify failed, notifications disabled.")
     HAS_NOTIFY = False
 
-print "Has notifications support", HAS_NOTIFY
+print("Has notifications support", HAS_NOTIFY)
 
 if wpath.no_use_notifications:
-    print 'Notifications disabled during setup.py configure'
+    print('Notifications disabled during setup.py configure')
 
 
 def can_use_notify():
@@ -55,8 +55,8 @@ def error(parent, message, block=True):
         notification = pynotify.Notification("ERROR", message, "error")
         notification.show()
         return
-    dialog = gtk.MessageDialog(parent, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR,
-                               gtk.BUTTONS_OK)
+    dialog = Gtk.MessageDialog(parent, Gtk.DialogFlags.MODAL, Gtk.MessageType.ERROR,
+                               Gtk.ButtonsType.OK)
     dialog.set_markup(message)
     if not block:
         dialog.present()
@@ -72,8 +72,8 @@ def alert(parent, message, block=True):
         """ Handle dialog destroy. """
         dialog.destroy()
 
-    dialog = gtk.MessageDialog(parent, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING,
-                               gtk.BUTTONS_OK)
+    dialog = Gtk.MessageDialog(parent, Gtk.DialogFlags.MODAL, Gtk.MessageType.WARNING,
+                               Gtk.ButtonsType.OK)
     dialog.set_markup(message)
     if not block:
         dialog.present()
@@ -92,11 +92,11 @@ def string_input(prompt, secondary, textbox_label):
         """ Handle dialog response. """
         dialog.response(response)
 
-    dialog = gtk.MessageDialog(
+    dialog = Gtk.MessageDialog(
         None,
-        gtk.DIALOG_MODAL,
-        gtk.MESSAGE_QUESTION,
-        gtk.BUTTONS_OK_CANCEL,
+        Gtk.DialogFlags.MODAL,
+        Gtk.MessageType.QUESTION,
+        Gtk.ButtonsType.OK_CANCEL,
         None)
 
     # set the text
@@ -104,21 +104,21 @@ def string_input(prompt, secondary, textbox_label):
     # add the secondary text
     dialog.format_secondary_markup(secondary)
 
-    entry = gtk.Entry()
+    entry = Gtk.Entry()
     # allow the user to press enter instead of clicking OK
-    entry.connect("activate", dialog_response, dialog, gtk.RESPONSE_OK)
+    entry.connect("activate", dialog_response, dialog, Gtk.ResponseType.OK)
 
     # create an hbox and pack the label and entry in
-    hbox = gtk.HBox()
-    hbox.pack_start(gtk.Label(textbox_label), False, 4, 4)
-    hbox.pack_start(entry)
+    hbox = Gtk.HBox()
+    hbox.pack_start(Gtk.Label(textbox_label), False, 4, 4)
+    hbox.pack_start(entry, True, True, 0)
 
     # pack the boxes and show the dialog
     # pylint: disable-msg=E1101
     dialog.vbox.pack_end(hbox, True, True, 0)
     dialog.show_all()
 
-    if dialog.run() == gtk.RESPONSE_OK:
+    if dialog.run() == Gtk.ResponseType.OK:
         text = entry.get_text()
         dialog.destroy()
         return text
@@ -127,31 +127,31 @@ def string_input(prompt, secondary, textbox_label):
         return None
 
 
-class SmallLabel(gtk.Label):
+class SmallLabel(Gtk.Label):
     """ Small GtkLabel. """
     def __init__(self, text=''):
-        gtk.Label.__init__(self, text)
+        Gtk.Label.__init__(self, text)
         self.set_size_request(50, -1)
 
 
-class LeftAlignedLabel(gtk.Label):
+class LeftAlignedLabel(Gtk.Label):
     """GtkLabel with text aligned to left. """
     def __init__(self, label=None):
-        gtk.Label.__init__(self, label)
+        Gtk.Label.__init__(self, label)
         self.set_alignment(0.0, 0.5)
 
 
-class LabelEntry(gtk.HBox):
+class LabelEntry(Gtk.HBox):
     """ A label on the left with a textbox on the right. """
     def __init__(self, text):
-        gtk.HBox.__init__(self)
-        self.entry = gtk.Entry()
+        Gtk.HBox.__init__(self)
+        self.entry = Gtk.Entry()
         self.entry.set_size_request(200, -1)
         self.label = LeftAlignedLabel()
         self.label.set_text(text)
         self.label.set_size_request(170, -1)
-        self.pack_start(self.label, fill=True, expand=True)
-        self.pack_start(self.entry, fill=False, expand=False)
+        self.pack_start(self.label, True, True, 0)
+        self.pack_start(self.entry, False, False, 0)
         self.label.show()
         self.entry.show()
         self.entry.connect('focus-out-event', self.hide_characters)
@@ -189,33 +189,33 @@ class LabelEntry(gtk.HBox):
             self.entry.set_visibility(False)
 
 
-class GreyLabel(gtk.Label):
+class GreyLabel(Gtk.Label):
     """ Creates a grey gtk.Label. """
     def __init__(self):
-        gtk.Label.__init__(self)
+        Gtk.Label.__init__(self)
 
     def set_label(self, text):
         self.set_markup(text)
         self.set_alignment(0, 0)
 
 
-class ProtectedLabelEntry(gtk.HBox):
+class ProtectedLabelEntry(Gtk.HBox):
     """ A LabelEntry with a CheckButton that protects the entry text. """
     def __init__(self, label_text):
-        gtk.HBox.__init__(self)
-        self.entry = gtk.Entry()
+        Gtk.HBox.__init__(self)
+        self.entry = Gtk.Entry()
         self.entry.set_size_request(200, -1)
         self.entry.set_visibility(False)
         self.label = LeftAlignedLabel()
         self.label.set_text(label_text)
         self.label.set_size_request(165, -1)
-        self.check = gtk.CheckButton()
+        self.check = Gtk.CheckButton()
         self.check.set_size_request(5, -1)
         self.check.set_active(False)
         self.check.set_focus_on_click(False)
-        self.pack_start(self.label, fill=True, expand=True)
-        self.pack_start(self.check, fill=True, expand=True)
-        self.pack_start(self.entry, fill=False, expand=False)
+        self.pack_start(self.label, True, True, 0)
+        self.pack_start(self.check, True, True, 0)
+        self.pack_start(self.entry, False, False, 0)
         self.label.show()
         self.check.show()
         self.entry.show()
@@ -243,21 +243,21 @@ class ProtectedLabelEntry(gtk.HBox):
         self.entry.set_visibility(active)
 
 
-class LabelCombo(gtk.HBox):
+class LabelCombo(Gtk.HBox):
     """ A label on the left with a combobox on the right. """
 
     def __init__(self, text):
-        gtk.HBox.__init__(self)
-        self.combo = gtk.ComboBox()
+        Gtk.HBox.__init__(self)
+        self.combo = Gtk.ComboBox()
         self.combo.set_size_request(200, -1)
         self.label = LeftAlignedLabel()
         self.label.set_text(text)
         self.label.set_size_request(170, -1)
-        cell = gtk.CellRendererText()
+        cell = Gtk.CellRendererText()
         self.combo.pack_start(cell, True)
         self.combo.add_attribute(cell, 'text', 0)
-        self.pack_start(self.label, fill=True, expand=True)
-        self.pack_start(self.combo, fill=False, expand=False)
+        self.pack_start(self.label, True, True, 0)
+        self.pack_start(self.combo, False, False, 0)
         self.label.show()
         self.combo.show()
         self.show()

@@ -51,9 +51,10 @@ try:
             pass
     import vcsinfo
     REVISION_NUM = vcsinfo.version_info['revno']
-except Exception, e:
-    print 'failed to find revision number:'
-    print e
+except Exception as e:
+    print('failed to find revision number:')
+    print(e)
+
 
 class build(_build):
     sub_commands = _build.sub_commands + [('compile_translations', None)]
@@ -216,10 +217,10 @@ class configure(Command):
             self.ddistro = 'FAIL'
             #self.no_install_init = True
             #self.distro_detect_failed = True
-            print 'WARNING: Unable to detect the distribution in use.  ' + \
-                  'If you have specified --distro or --init and --initfile, configure will continue.  ' + \
-                  'Please report this warning, along with the name of your ' + \
-                  'distribution, to the wicd developers.'
+            print('WARNING: Unable to detect the distribution in use.  ' +
+                  'If you have specified --distro or --init and --initfile, configure will continue.  ' +
+                  'Please report this warning, along with the name of your ' +
+                  'distribution, to the wicd developers.')
 
         # Try to get the pm-utils sleep hooks directory from pkg-config and
         # the kde prefix from kde-config
@@ -259,7 +260,7 @@ class configure(Command):
                    not os.path.isabs(kde4dir_candidate):
                     raise ValueError
                 else:
-                    self.kdedir = kde4dir_candidate + '/share/autostart'
+                    self.kdedir = '{0}/share/autostart'.format(kde4dir_candidate)
             except (OSError, ValueError):
                 # If neither kde-config nor kde4-config are not present or 
                 # return an error, then we can assume that kde isn't installed
@@ -276,7 +277,7 @@ class configure(Command):
         self.logperms = '0600'
 
     def distro_check(self):
-        print "Distro is: " + self.distro
+        print("Distro is: " + self.distro)
         if self.distro in ['sles', 'suse']:
             self.init = '/etc/init.d/'
             self.initfile = 'init/suse/wicd'
@@ -313,11 +314,12 @@ class configure(Command):
             self.initfile = 'init/lunar/wicd'
         else :
             if self.distro == 'auto':
-                print "NOTICE: Automatic distro detection found: " + self.ddistro + ", retrying with that..."
+                print(
+                    "NOTICE: Automatic distro detection found: " + self.ddistro + ", retrying with that...")
                 self.distro = self.ddistro
                 self.distro_check()
             else:
-                print "WARNING: Distro detection failed!"
+                print("WARNING: Distro detection failed!")
                 self.no_install_init = True
                 self.distro_detect_failed = True
 
@@ -326,8 +328,8 @@ class configure(Command):
         self.distro_check()
         if self.distro_detect_failed and not self.no_install_init and \
            'FAIL' in [self.init, self.initfile]:
-            print 'ERROR: Failed to detect distro. Configure cannot continue.  ' + \
-                  'Please specify --init and --initfile to continue with configuration.'
+            print('ERROR: Failed to detect distro. Configure cannot continue.  ' +
+                  'Please specify --init and --initfile to continue with configuration.')
 
         # loop through the argument definitions in user_options
         for argument in self.user_options:
@@ -339,9 +341,9 @@ class configure(Command):
             # if the option is not python (which is not a directory)
             if not argument[0][:-1] == "python":
                 # see if it ends with a /
-                if not value.endswith("/"):
+                if not str(value).endswith(os.sep):
                     # if it doesn't, slap one on
-                    setattr(self, argument_name, value + "/")
+                    setattr(self, argument_name, str(value) + os.sep)
             else:
                 # as stated above, the python entry defines the beginning
                 # of the files section
@@ -353,26 +355,26 @@ class configure(Command):
             if argument[0].endswith('='):
                 cur_arg = argument[0][:-1]
                 cur_arg_value = getattr(self, cur_arg.replace('-', '_'))
-                print "%s is %s" % (cur_arg, cur_arg_value)
+                print("%s is %s" % (cur_arg, cur_arg_value))
                 values.append((cur_arg, getattr(self, cur_arg.replace('-','_'))))
             else:
                 cur_arg = argument[0]
                 cur_arg_value = getattr(self, cur_arg.replace('-', '_'))
-                print "Found switch %s %s" % (argument, cur_arg_value) 
+                print("Found switch %s %s" % (argument, cur_arg_value))
                 values.append((cur_arg, bool(cur_arg_value)))
-        
-        print 'Replacing values in template files...'
+
+        print('Replacing values in template files...')
         for item in os.listdir('in'):
             if item.endswith('.in'):
-                print 'Replacing values in',item,
+                print('Replacing values in', item, ' ')
                 original_name = os.path.join('in',item)
                 item_in = open(original_name, 'r')
                 final_name = item[:-3].replace('=','/')
                 parent_dir = os.path.dirname(final_name)
                 if parent_dir and not os.path.exists(parent_dir):
-                    print '(mkdir %s)'%parent_dir,
+                    print('(mkdir %s)' % parent_dir, ' ')
                     os.makedirs(parent_dir)
-                print final_name
+                print(final_name)
                 item_out = open(final_name, 'w')
                 for line in item_in.readlines():
                     for item, value in values:
@@ -403,19 +405,19 @@ class clear_generated(Command):
         pass
         
     def run(self):
-        print 'Removing completed template files...'
+        print('Removing completed template files...')
         for item in os.listdir('in'):
             if item.endswith('.in'):
-                print 'Removing completed',item,
+                print('Removing completed', item, ' ')
                 original_name = os.path.join('in',item)
                 final_name = item[:-3].replace('=','/')
-                print final_name, '...',
+                print(final_name, '...', ' ')
                 if os.path.exists(final_name):
                     os.remove(final_name)
-                    print 'Removed.'
+                    print('Removed.')
                 else:
-                    print 'Does not exist.'
-        print 'Removing compiled translation files...'
+                    print('Does not exist.')
+        print('Removing compiled translation files...')
         if os.path.exists('translations'):
             shutil.rmtree('translations/')
         os.makedirs('translations/')
@@ -428,7 +430,7 @@ class install(_install):
             self.run_command('build')
             import wpath
 
-        print "Using init file",(wpath.init, wpath.initfile)
+        print("Using init file", (wpath.init, wpath.initfile))
         data.extend([
             (wpath.dbus, ['other/wicd.conf']),
             (wpath.dbus_service, ['other/org.wicd.daemon.service']),
@@ -536,16 +538,15 @@ class install(_install):
             data.append((wpath.suspend, ['other/50-wicd-suspend.sh']))
         if not wpath.no_install_pmutils:
             data.append((wpath.pmutils, ['other/55wicd']))
-        print 'Using pid path', os.path.basename(wpath.pidfile)
+        print('Using pid path', os.path.basename(wpath.pidfile))
         if not wpath.no_install_i18n:
-            print 'Language support for',
+            print('Language support for', end = ' ')
             for language in sorted(glob('translations/*')):
                 language = language.replace('translations/', '')
-                print language,
+                print(language, end=' ')
                 data.append((wpath.translations + language + '/LC_MESSAGES/',
                         ['translations/' + language + '/LC_MESSAGES/wicd.mo']))
-        print
-
+        print()
         _install.run(self)
 
 class test(Command):
@@ -560,9 +561,10 @@ class test(Command):
         pass
         
     def run(self):
-        print "importing tests"
+        print("importing tests")
         import tests
-        print 'running tests'
+
+        print('running tests')
         tests.run_tests()
 
 class update_message_catalog(Command):
@@ -633,10 +635,10 @@ class compile_translations(Command):
                     returncode = msgfmt.wait() # let it finish, and get the exit code
                     output = msgfmt.stderr.readline().strip()
                     if len(output) == 0 or returncode != 0:
-                        print len(output), returncode
+                        print(len(output), returncode)
                         raise ValueError
                     else:
-                        m = re.match('(\d+) translated messages(?:, (\d+) fuzzy translation)?(?:, (\d+) untranslated messages)?.', output)
+                        m = re.match('(\d+) translated messages(?:, (\d+) fuzzy translation)?(?:, (\d+) untranslated messages)?.', str(output))
                         if m:
                             done, fuzzy, missing = m.groups()
                             fuzzy = int(fuzzy) if fuzzy else 0
@@ -646,11 +648,11 @@ class compile_translations(Command):
                             if completeness >= self.threshold:
                                 compile_po = True
                             else:
-                                print 'Disabled %s (%s%% < %s%%).' % \
-                                    (lang, completeness*100, self.threshold*100)
+                                print('Disabled %s (%s%% < %s%%).' %
+                                      (lang, completeness * 100, self.threshold * 100))
                                 continue
                 except (OSError, ValueError):
-                    print 'ARGH'
+                    print('ARGH')
 
                 if compile_po:
                     os.makedirs('translations/' + lang + '/LC_MESSAGES/')

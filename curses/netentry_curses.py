@@ -402,7 +402,7 @@ class WiredSettingsDialog(AdvancedSettingsDialog):
             bool(wired.GetWiredProperty('usedhcphostname'))
         )
         self.dhcp_h.set_sensitive(self.use_dhcp_h.get_state())
-        self.dhcp_h.set_edit_text(unicode(dhcphname))
+        self.dhcp_h.set_edit_text(str(dhcphname))
 
     def save_settings(self):
         """ Save settings to disk. """
@@ -584,7 +584,7 @@ class WirelessSettingsDialog(AdvancedSettingsDialog):
             bool(wireless.GetWirelessProperty(networkID, 'usedhcphostname'))
         )
         self.dhcp_h.set_sensitive(self.use_dhcp_h.get_state())
-        self.dhcp_h.set_edit_text(unicode(dhcphname))
+        self.dhcp_h.set_edit_text(str(dhcphname))
 
     def set_net_prop(self, option, value):
         """ Sets the given option to the given value for this network. """

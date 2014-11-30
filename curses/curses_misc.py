@@ -21,11 +21,10 @@ wicd-curses.
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
-
 import urwid
 
 from wicd.translations import _
-
+from functools import reduce
 
 # Uses code that is towards the bottom
 def error(ui, parent, message):
@@ -185,7 +184,7 @@ class MaskingEdit(urwid.Edit):
         """ Get masked out text. """
         return self.mask_char * len(self.get_edit_text())
 
-    def render(self, (maxcol, ), focus=False):
+    def render(self, maxcol, focus=False):
         """
         Render edit widget and return canvas.  Include cursor when in
         focus.
@@ -606,7 +605,7 @@ class Dialog2(urwid.WidgetWrap):
                             raise DialogExit(-1)
                         if k:
                             self.unhandled_key(size, k)
-        except DialogExit, e:
+        except DialogExit as e:
             return self.on_exit(e.args[0])
 
     def on_exit(self, exitcode):
@@ -707,7 +706,7 @@ class OptCols(urwid.WidgetWrap):
         # callbacks map the text contents to its assigned callback.
         self.callbacks = []
         for cmd in tuples:
-            key = reduce(lambda s, (f, t): s.replace(f, t), [
+            key = reduce(lambda s, f: s.replace(f[0], f[1]), [
                 ('ctrl ', 'Ctrl+'), ('meta ', 'Alt+'),
                 ('left', '<-'), ('right', '->'),
                 ('page up', 'Page Up'), ('page down', 'Page Down'),

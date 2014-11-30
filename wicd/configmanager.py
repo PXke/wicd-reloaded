@@ -8,7 +8,7 @@ reusable for other purposes as well.
 """
 
 #
-#   Copyright (C) 2008-2009 Adam Blackburn
+# Copyright (C) 2008-2009 Adam Blackburn
 #   Copyright (C) 2008-2009 Dan O'Reilly
 #   Copyright (C) 2011      David Paleino
 #
@@ -25,14 +25,16 @@ reusable for other purposes as well.
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import sys, os
+import sys
+import os
 
-from ConfigParser import RawConfigParser, ParsingError
+from configparser import RawConfigParser, ParsingError
 import codecs
 
 from wicd.misc import Noneify, to_unicode
 
 from dbus import Int32
+
 
 def sanitize_config_file(path):
     """ Remove invalid lines from config file. """
@@ -46,8 +48,10 @@ def sanitize_config_file(path):
     conf.write(newconf)
     conf.close()
 
+
 class ConfigManager(RawConfigParser):
     """ A class that can be used to manage a given configuration file. """
+
     def __init__(self, path, debug=False, mark_whitespace="`'`"):
         RawConfigParser.__init__(self)
         self.config_file = path
@@ -61,20 +65,20 @@ class ConfigManager(RawConfigParser):
             self.write()
             try:
                 self.read(path)
-            except ParsingError, p:
-                print "Could not start wicd: %s" % p.message
+            except ParsingError as p:
+                print("Could not start wicd: {1}".format(p.message))
                 sys.exit(1)
 
     def __repr__(self):
         return self.config_file
-    
+
     def __str__(self):
         return self.config_file
-    
+
     def get_config(self):
         """ Returns the path to the loaded config file. """
         return self.config_file
-        
+
     def set_option(self, section, option, value, write=False):
         """ Wrapper around ConfigParser.set
 
@@ -86,11 +90,11 @@ class ConfigManager(RawConfigParser):
         """
         if not self.has_section(section):
             self.add_section(section)
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             value = to_unicode(value)
             if value.startswith(' ') or value.endswith(' '):
-                value = "%(ws)s%(value)s%(ws)s" % {"value" : value,
-                                                   "ws" : self.mrk_ws}
+                value = "%(ws)s%(value)s%(ws)s" % {"value": value,
+                                                   "ws": self.mrk_ws}
         RawConfigParser.set(self, section, str(option), value)
         if write:
             self.write()
@@ -98,7 +102,7 @@ class ConfigManager(RawConfigParser):
     def set(self, *args, **kargs):
         """ Calls the set_option method. """
         self.set_option(*args, **kargs)
-        
+
     def get_option(self, section, option, default="__None__"):
         """ Wrapper around ConfigParser.get. 
         
@@ -112,33 +116,33 @@ class ConfigManager(RawConfigParser):
                 self.add_section(section)
             else:
                 return None
-    
+
         if self.has_option(section, option):
             ret = RawConfigParser.get(self, section, option)
-            if (isinstance(ret, basestring) and ret.startswith(self.mrk_ws) 
+            if (isinstance(ret, str) and ret.startswith(self.mrk_ws)
                 and ret.endswith(self.mrk_ws)):
                 ret = ret[3:-3]
             ret = to_unicode(ret)
             if default:
                 if self.debug:
                     # mask out sensitive information
-                    if option in ['apsk', 'password', 'identity', \
-                                  'private_key', 'private_key_passwd', \
+                    if option in ['apsk', 'password', 'identity',
+                                  'private_key', 'private_key_passwd',
                                   'key', 'passphrase']:
-                        print ''.join(['found ', option, \
-                            ' in configuration *****'])
+                        print(''.join(['found ', option,
+                                       ' in configuration *****']))
                     else:
-                        print ''.join(['found ', option, ' in configuration ',
-                                       str(ret)])
+                        print(''.join(['found ', option, ' in configuration ',
+                                       str(ret)]))
         else:
             if default != "__None__":
-                print 'did not find %s in configuration, setting default %s' \
-                    % (option, str(default))
+                print('did not find {0} in configuration, setting default {1}'.format(option,
+                                                                                      str(default)))
                 self.set(section, option, str(default), write=True)
                 ret = default
             else:
                 ret = None
-        
+
         # Try to intelligently handle the type of the return value.
         try:
             if not ret.startswith('0') or len(ret) == 1:
@@ -146,17 +150,17 @@ class ConfigManager(RawConfigParser):
         except (ValueError, TypeError, AttributeError):
             ret = Noneify(ret)
         # This is a workaround for a python-dbus issue on 64-bit systems.
-        if isinstance(ret, (int, long)):
+        if isinstance(ret, (int,)):
             try:
                 Int32(ret)
             except OverflowError:
                 ret = str(ret)
         return to_unicode(ret)
-    
+
     def get(self, *args, **kargs):
         """ Calls the get_option method """
         return self.get_option(*args, **kargs)
-    
+
     def _write_one(self):
         """ Writes the loaded config file to disk. """
         for section in self.sections():
@@ -165,7 +169,7 @@ class ConfigManager(RawConfigParser):
         configfile = open(self.config_file, 'w')
         RawConfigParser.write(self, configfile)
         configfile.close()
-    
+
     def remove_section(self, section):
         """ Wrapper around the ConfigParser.remove_section() method.
         
@@ -175,7 +179,7 @@ class ConfigManager(RawConfigParser):
         """
         if self.has_section(section):
             RawConfigParser.remove_section(self, section)
-            
+
     def reload(self):
         """ Re-reads the config file, in case it was edited out-of-band. """
         self.read(self.config_file)
@@ -193,7 +197,7 @@ class ConfigManager(RawConfigParser):
         files = []
 
         if os.path.exists(path_d):
-            files = [ os.path.join(path_d, f) for f in os.listdir(path_d) ]
+            files = [os.path.join(path_d, f) for f in os.listdir(path_d)]
             files.sort()
 
         for fname in files:

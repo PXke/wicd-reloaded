@@ -24,12 +24,14 @@ rotates itself when a maximum size is reached.
 import sys
 import os
 import time
+import io
+import traceback
 
 class SizeError(IOError):
     """ Custom error class. """
     pass
 
-class LogFile(file):
+class LogFile(io.TextIOWrapper):
     """LogFile(name, [mode="w"], [maxsize=360000])
     
     Opens a new file object. After writing <maxsize> bytes a SizeError
@@ -37,7 +39,7 @@ class LogFile(file):
     
     """
     def __init__(self, name, mode="a", maxsize=360000):
-        super(LogFile, self).__init__(name, mode)
+        super(LogFile, self).__init__(open(name, mode=mode))
         self.maxsize = maxsize
         self.eol = True
         try:
@@ -178,14 +180,15 @@ def shiftlogs(basename, maxsave):
         try:
             os.rename(oldname, newname)
         except OSError:
-            pass
+            traceback.print_exc()
+
     try:
         os.rename(basename, "%s.1" % (basename))
     except OSError:
-        pass
+        traceback.print_exc()
 
 
-def open(name, maxsize=360000, maxsave=9):
+def openlog(name, maxsize=360000, maxsave=9):
     """ Open logfile. """
     return ManagedLog(name, maxsize, maxsave)
 
