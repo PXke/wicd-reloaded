@@ -24,8 +24,8 @@ handles recieving/sendings the settings from/to the daemon.
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import gtk
-import gobject
+
+from gi.repository import GObject, Gtk, Gdk
 import os
 
 from wicd import misc
@@ -335,11 +335,11 @@ class PreferencesDialog(object):
         """ Set up anything that doesn't have to be persisted later. """
         def build_combobox(lbl):
             """ Sets up a ComboBox using the given widget name. """
-            liststore = gtk.ListStore(gobject.TYPE_STRING)
+            liststore = Gtk.ListStore(GObject.TYPE_STRING)
             combobox = self.wTree.get_object(lbl)
             combobox.clear()
             combobox.set_model(liststore)
-            cell = gtk.CellRendererText()
+            cell = Gtk.CellRendererText()
             combobox.pack_start(cell, True)
             combobox.add_attribute(cell, 'text', 0)
             return combobox
@@ -379,10 +379,10 @@ class PreferencesDialog(object):
         self.dialog = self.wTree.get_object("pref_dialog")
         self.dialog.set_title(_('Preferences'))
         self.dialog.set_icon_name('wicd-gtk')
-        width = int(gtk.gdk.screen_width() / 2.4)
+        width = int(Gtk.Window().get_screen().width() / 2.4)
         if width > 450:
             width = 450
-        self.dialog.resize(width, int(gtk.gdk.screen_height() / 2))
+        self.dialog.resize(width, int(Gtk.Window().get_screen().height() / 2))
 
         self.wiredcheckbox = setup_label(
             "pref_always_check",
@@ -459,8 +459,12 @@ class PreferencesDialog(object):
         self.wpadrivers.append("ralink_legacy")
         self.wpadrivers.append('none')
 
+        liststore = Gtk.ListStore(str)
         for x in self.wpadrivers:
-            self.wpadrivercombo.append_text(x)
+            liststore.append([x])
+
+        self.wpadrivercombo.set_model(liststore)
+
 
         self.entryWirelessInterface = self.wTree.get_object("pref_wifi_entry")
         self.entryWiredInterface = self.wTree.get_object("pref_wired_entry")
@@ -480,11 +484,15 @@ class PreferencesDialog(object):
         self.backends = daemon.GetBackendList()
         self.be_descriptions = daemon.GetBackendDescriptionDict()
 
+
+        liststore = Gtk.ListStore(str)
         for x in self.backends:
             if x:
                 if x == 'ioctl':
                     x = 'ioctl NOT SUPPORTED'
-                self.backendcombo.append_text(x)
+                liststore.append([x])
+
+        self.backendcombo.set_model(liststore)
 
     def be_combo_changed(self, combo):
         """ Update the description label for the given backend. """

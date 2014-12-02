@@ -3,7 +3,7 @@
 """ autoconnect -- Triggers an automatic connection attempt. """
 
 #
-#   Copyright (C) 2007 - 2009 Adam Blackburn
+# Copyright (C) 2007 - 2009 Adam Blackburn
 #   Copyright (C) 2007 - 2009 Dan O'Reilly
 #
 #   This program is free software; you can redistribute it and/or modify
@@ -29,33 +29,38 @@ if getattr(dbus, 'version', (0, 0, 0)) < (0, 80, 0):
     import dbus.glib
 else:
     from dbus.mainloop.glib import DBusGMainLoop
+
     DBusGMainLoop(set_as_default=True)
 
 try:
     dbusmanager.connect_to_dbus()
     daemon = dbusmanager.get_interface('daemon')
     wireless = dbusmanager.get_interface('wireless')
-except Exception, e:
-    print >> sys.stderr, "Exception caught: %s" % str(e)
-    print >> sys.stderr, 'Could not connect to daemon.'
+except Exception as e:
+    print("Exception caught: {0}".format(e), file=sys.stderr)
+    print('Could not connect to daemon.', file=sys.stderr)
     sys.exit(1)
+
 
 def handler(*args):
     """ No-op handler. """
     pass
+
+
 def error_handler(*args):
     """ Error handler. """
-    print >> sys.stderr, 'Async error autoconnecting.'
+    print('Async error autoconnecting.', file=sys.stderr)
     sys.exit(3)
+
 
 if __name__ == '__main__':
     try:
         time.sleep(2)
         daemon.SetSuspend(False)
         if not daemon.CheckIfConnecting():
-            daemon.AutoConnect(True, reply_handler=handler, 
+            daemon.AutoConnect(True, reply_handler=handler,
                                error_handler=error_handler)
-    except Exception, e:
-        print >> sys.stderr, "Exception caught: %s" % str(e)
-        print >> sys.stderr, 'Error autoconnecting.'
+    except Exception as e:
+        print("Exception caught: {0}".format(e), file=sys.stderr)
+        print('Error autoconnecting.', file=sys.stderr)
         sys.exit(2)

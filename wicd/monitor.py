@@ -8,7 +8,7 @@ when appropriate.
 
 """
 #
-#   Copyright (C) 2007 - 2009 Adam Blackburn
+# Copyright (C) 2007 - 2009 Adam Blackburn
 #   Copyright (C) 2007 - 2009 Dan O'Reilly
 #
 #   This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@ when appropriate.
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import gobject
+from gi.repository import GObject as gobject
 import time
 
 from dbus import DBusException
@@ -46,17 +46,19 @@ wireless = dbus_dict["wireless"]
 
 mainloop = None
 
+
 def diewithdbus(func):
     """
     Decorator catching DBus exceptions, making wicd quit.
     """
+
     def wrapper(self, *__args, **__kargs):
         try:
             ret = func(self, *__args, **__kargs)
             self.__lost_dbus_count = 0
             return ret
-        except DBusException, e:
-            print  "Caught exception %s" % str(e)
+        except DBusException as e:
+            print("Caught exception %s" % str(e))
             if not hasattr(self, "__lost_dbus_count"):
                 self.__lost_dbus_count = 0
             if self.__lost_dbus_count > 3:
@@ -67,10 +69,12 @@ def diewithdbus(func):
     wrapper.__name__ = func.__name__
     wrapper.__dict__ = func.__dict__
     wrapper.__doc__ = func.__doc__
-    return wrapper 
+    return wrapper
+
 
 class ConnectionStatus(object):
     """ Class for monitoring the computer's connection status. """
+
     def __init__(self):
         """ Initialize variables needed for the connection status methods. """
         self.last_strength = -2
@@ -90,10 +94,10 @@ class ConnectionStatus(object):
         self.__lost_dbus_count = 0
         self._to_time = daemon.GetBackendUpdateInterval()
         self.update_callback = None
-        
+
         self.add_poll_callback()
         bus = dbusmanager.get_bus()
-        bus.add_signal_receiver(self._force_update_connection_status, 
+        bus.add_signal_receiver(self._force_update_connection_status,
                                 "UpdateState", "org.wicd.daemon")
         bus.add_signal_receiver(self._update_timeout_interval,
                                 "SignalBackendChanged", "org.wicd.daemon")
@@ -115,7 +119,7 @@ class ConnectionStatus(object):
         gobject.source_remove(self.update_callback)
         self.update_connection_status()
         self.add_poll_callback()
-        
+
     def add_poll_callback(self):
         """ Registers a polling call at a predetermined interval.
         
@@ -124,7 +128,7 @@ class ConnectionStatus(object):
         """
         self.update_callback = misc.timeout_add(self._to_time,
                                                 self.update_connection_status)
-    
+
     def check_for_wired_connection(self, wired_ip):
         """ Checks for a wired connection.
 
@@ -188,7 +192,7 @@ class ConnectionStatus(object):
             # If we haven't gotten any signal 4 runs in a row (12 seconds),
             # try to reconnect.
             self.connection_lost_counter += 1
-            print self.connection_lost_counter
+            print(self.connection_lost_counter)
             if self.connection_lost_counter >= 4 and daemon.GetAutoReconnect():
                 wireless.DisconnectWireless()
                 self.connection_lost_counter = 0
@@ -197,11 +201,11 @@ class ConnectionStatus(object):
             self.connection_lost_counter = 0
 
         if (wifi_signal != self.last_strength or
-            self.network != self.last_network):
+                    self.network != self.last_network):
             self.last_strength = wifi_signal
             self.last_network = self.network
             self.signal_changed = True
-            daemon.SetCurrentInterface(daemon.GetWirelessInterface())    
+            daemon.SetCurrentInterface(daemon.GetWirelessInterface())
 
         return True
 
@@ -218,7 +222,7 @@ class ConnectionStatus(object):
         wifi_ip = None
 
         if daemon.GetSuspend():
-            print "Suspended."
+            print("Suspended.")
             state = misc.SUSPENDED
             return self.update_state(state)
 
@@ -251,10 +255,10 @@ class ConnectionStatus(object):
                 # Don't trigger it if the gui is open, because autoconnect
                 # is disabled while it's open.
                 if not daemon.GetGUIOpen():
-                    print 'Killing wireless connection to switch to wired...'
+                    print('Killing wireless connection to switch to wired...')
                     wireless.DisconnectWireless()
-                    daemon.AutoConnect(False, reply_handler=lambda *a:None,
-                                       error_handler=lambda *a:None)
+                    daemon.AutoConnect(False, reply_handler=lambda *a: None,
+                                       error_handler=lambda *a: None)
                     return self.update_state(misc.NOT_CONNECTED)
             return self.update_state(misc.WIRELESS, wifi_ip=wifi_ip)
 
@@ -279,30 +283,30 @@ class ConnectionStatus(object):
                 info = ["wired"]
             else:
                 info = ["wireless",
-                  misc.noneToBlankString(wireless.GetCurrentNetwork(iwconfig))]
+                        misc.noneToBlankString(wireless.GetCurrentNetwork(iwconfig))]
         elif state == misc.WIRELESS:
             self.reconnect_tries = 0
             info = [str(wifi_ip),
-                misc.noneToBlankString(wireless.GetCurrentNetwork(iwconfig)),
-                str(self._get_printable_sig_strength()),
-                str(wireless.GetCurrentNetworkID(iwconfig)),
-                misc.noneToBlankString(wireless.GetCurrentBitrate(iwconfig))]
+                    misc.noneToBlankString(wireless.GetCurrentNetwork(iwconfig)),
+                    str(self._get_printable_sig_strength()),
+                    str(wireless.GetCurrentNetworkID(iwconfig)),
+                    misc.noneToBlankString(wireless.GetCurrentBitrate(iwconfig))]
         elif state == misc.WIRED:
             self.reconnect_tries = 0
             info = [str(wired_ip)]
         else:
-            print 'ERROR: Invalid state!'
+            print('ERROR: Invalid state!')
             return True
 
         daemon.SetConnectionStatus(state, info)
 
         # Send a D-Bus signal announcing status has changed if necessary.
-        if (state != self.last_state or (state == misc.WIRELESS and 
-                                         self.signal_changed)):
+        if (state != self.last_state or (state == misc.WIRELESS and
+                                             self.signal_changed)):
             daemon.EmitStatusChanged(state, info)
 
         if (state != self.last_state) and (state == misc.NOT_CONNECTED) and \
-            (not daemon.GetForcedDisconnect()):
+                (not daemon.GetForcedDisconnect()):
             daemon.Disconnect()
             # Disconnect() sets forced disconnect = True
             # so we'll revert that
@@ -327,7 +331,7 @@ class ConnectionStatus(object):
                 else:
                     wifi_signal = int(signal)
         except TypeError:
-            wifi_signal = 0        
+            wifi_signal = 0
 
         return wifi_signal
 
@@ -344,15 +348,15 @@ class ConnectionStatus(object):
 
         # Some checks to keep reconnect retries from going crazy.
         if (self.reconnect_tries > 3 and
-            (time.time() - self.last_reconnect_time) < 200):
-            print "Throttling autoreconnect"
+                    (time.time() - self.last_reconnect_time) < 200):
+            print("Throttling autoreconnect")
             return
 
         self.reconnecting = True
         daemon.SetCurrentInterface('')
 
         if daemon.ShouldAutoReconnect():
-            print 'Starting automatic reconnect process'
+            print('Starting automatic reconnect process')
             self.last_reconnect_time = time.time()
             self.reconnect_tries += 1
 
@@ -362,23 +366,26 @@ class ConnectionStatus(object):
             if from_wireless and cur_net_id > -1:
                 # make sure disconnect scripts are run
                 # before we reconnect
-                print 'Disconnecting from network'
+                print('Disconnecting from network')
                 wireless.DisconnectWireless()
-                print 'Trying to reconnect to last used wireless ' + \
-                      'network'
+                print('Trying to reconnect to last used wireless ' +
+                      'network')
                 wireless.ConnectWireless(cur_net_id)
             else:
                 daemon.AutoConnect(True, reply_handler=reply_handle,
                                    error_handler=err_handle)
         self.reconnecting = False
 
+
 def reply_handle():
     """ Just a dummy function needed for asynchronous dbus calls. """
     pass
 
+
 def err_handle(error):
     """ Just a dummy function needed for asynchronous dbus calls. """
     pass
+
 
 def main():
     """ Starts the connection monitor. 

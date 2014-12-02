@@ -46,7 +46,7 @@ import urwid
 # DBus communication stuff
 from dbus import DBusException
 # It took me a while to figure out that I have to use this.
-import gobject
+from gi.repository import GObject as gobject
 
 # Other important wicd-related stuff
 from wicd import wpath
@@ -96,15 +96,15 @@ def wrap_exceptions(func):
             #gobject.source_remove(redraw_tag)
             loop.quit()
             ui.stop()
-            print >> sys.stderr, "\n" + _('Terminated by user')
+            print("\n" + _('Terminated by user'), file=sys.stderr)
             #raise
         except DBusException:
             loop.quit()
             ui.stop()
-            print >> sys.stderr, "\n" + _('DBus failure! '
+            print("\n" + _('DBus failure! '
                 'This is most likely caused by the wicd daemon '
                 'stopping while wicd-curses is running. '
-                'Please restart the daemon, and then restart wicd-curses.')
+                'Please restart the daemon, and then restart wicd-curses.'), file=sys.stderr)
             raise
         except:
             # Quit the loop
@@ -228,7 +228,7 @@ def help_dialog(body):
     textT = urwid.Text(('header', _('wicd-curses help')), 'right')
     textSH = urwid.Text([
         'This is ', ('blue', 'wicd-curses-' + CURSES_REV),
-        ' using wicd ', unicode(daemon.Hello()), '\n'
+        ' using wicd ', str(daemon.Hello()), '\n'
     ])
 
     textH = urwid.Text([
@@ -510,7 +510,7 @@ class WiredComboBox(ComboBox):
             dialog = InputDialog(
                 ('header', _('Rename wired profile')),
                 7, 30,
-                edit_text=unicode(self.get_selected_profile())
+                edit_text=str(self.get_selected_profile())
             )
             exitcode, name = dialog.run(ui, self.parent)
             if exitcode == 0:
@@ -1129,21 +1129,23 @@ class appGUI():
                 self.size = ui.get_cols_rows()
                 continue
 
-    def call_update_ui(self, source, cb_condition):
+    def call_update_ui(self, cond, data):
         """ Update UI. """
-        self.update_ui(True)
+        self.update_ui()
         return True
 
     # Redraw the screen
     @wrap_exceptions
-    def update_ui(self, from_key=False):
+    def update_ui(self):
         """ Redraw the screen. """
         if not ui._started:
             return False
 
-        input_data = ui.get_input_nonblocking()
+        input_data = ui.get_available_raw_input()
         # Resolve any "alarms" in the waiting
-        self.handle_keys(input_data[1])
+        for i in range(len(input_data)):
+            input_data[i] = chr(input_data[i])
+        self.handle_keys(input_data)
 
         # Update the screen
         canvas = self.frame.render((self.size), True)
@@ -1245,8 +1247,7 @@ def setup_dbus(force=True):
     try:
         dbusmanager.connect_to_dbus()
     except DBusException:
-        print >> sys.stderr, \
-          _("Can't connect to the daemon, trying to start it automatically...")
+        print( _("Can't connect to the daemon, trying to start it automatically..."), file=sys.stderr)
     bus = dbusmanager.get_bus()
     dbus_ifaces = dbusmanager.get_dbus_ifaces()
     daemon = dbus_ifaces['daemon']
@@ -1254,8 +1255,8 @@ def setup_dbus(force=True):
     wired = dbus_ifaces['wired']
 
     if not daemon:
-        print 'Error connecting to wicd via D-Bus.  ' \
-            'Please make sure the wicd service is running.'
+        print('Error connecting to wicd via D-Bus.  '
+              'Please make sure the wicd service is running.')
         sys.exit(3)
 
     netentry_curses.dbus_init(dbus_ifaces)
@@ -1273,11 +1274,11 @@ if __name__ == '__main__':
                 (CURSES_REV, daemon.Hello()),
             prog="wicd-curses"
         )
-    except Exception, e:
+    except Exception as e:
         if "DBus.Error.AccessDenied" in e.get_dbus_name():
-            print _('ERROR: wicd-curses was denied access to the wicd daemon: '
-                'please check that your user is in the "$A" group.'). \
-                replace('$A', '\033[1;34m' + wpath.wicd_group + '\033[0m')
+            print(_('ERROR: wicd-curses was denied access to the wicd daemon: '
+                    'please check that your user is in the "$A" group.').
+                  replace('$A', '\033[1;34m' + wpath.wicd_group + '\033[0m'))
             sys.exit(1)
         else:
             raise

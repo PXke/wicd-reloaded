@@ -24,7 +24,7 @@ contained within them.
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import gtk
+from gi.repository import Gtk
 import os
 
 import wicd.misc as misc
@@ -50,7 +50,7 @@ def setup_dbus():
     wired = dbusmanager.get_interface('wired')
 
 
-class AdvancedSettingsDialog(gtk.Dialog):
+class AdvancedSettingsDialog(Gtk.Dialog):
     """ Advanced settings dialog. """
     def __init__(self, network_name=None):
         """ Build the base advanced settings dialog.
@@ -65,15 +65,15 @@ class AdvancedSettingsDialog(gtk.Dialog):
         else:
             title = _('Properties')
 
-        gtk.Dialog.__init__(
+        Gtk.Dialog.__init__(
             self,
             title=title,
-            flags=gtk.DIALOG_MODAL,
+            flags=Gtk.DialogFlags.MODAL,
             buttons=(
-                gtk.STOCK_CANCEL,
-                gtk.RESPONSE_REJECT,
-                gtk.STOCK_OK,
-                gtk.RESPONSE_ACCEPT
+                Gtk.STOCK_CANCEL,
+                Gtk.ResponseType.REJECT,
+                Gtk.STOCK_OK,
+                Gtk.ResponseType.ACCEPT
             )
         )
 
@@ -91,57 +91,55 @@ class AdvancedSettingsDialog(gtk.Dialog):
         self.txt_dns_1 = LabelEntry(_('DNS server') + ' 1')
         self.txt_dns_2 = LabelEntry(_('DNS server') + ' 2')
         self.txt_dns_3 = LabelEntry(_('DNS server') + ' 3')
-        dhcp_hostname_hbox = gtk.HBox(False, 0)
-        self.chkbox_use_dhcp_hostname = gtk.CheckButton()
+        dhcp_hostname_hbox = Gtk.HBox(False, 0)
+        self.chkbox_use_dhcp_hostname = Gtk.CheckButton()
         self.txt_dhcp_hostname = LabelEntry("DHCP Hostname")
         dhcp_hostname_hbox.pack_start(
-            self.chkbox_use_dhcp_hostname, fill=False, expand=False)
-        dhcp_hostname_hbox.pack_start(self.txt_dhcp_hostname)
-        self.chkbox_static_ip = gtk.CheckButton(_('Use Static IPs'))
-        self.chkbox_static_dns = gtk.CheckButton(_('Use Static DNS'))
-        self.chkbox_global_dns = gtk.CheckButton(_('Use global DNS servers'))
-        self.hbox_dns = gtk.HBox(False, 0)
-        self.hbox_dns.pack_start(self.chkbox_static_dns)
-        self.hbox_dns.pack_start(self.chkbox_global_dns)
+            self.chkbox_use_dhcp_hostname, False, False, 0)
+        dhcp_hostname_hbox.pack_start(self.txt_dhcp_hostname, True, True, 0)
+        self.chkbox_static_ip = Gtk.CheckButton(_('Use Static IPs'))
+        self.chkbox_static_dns = Gtk.CheckButton(_('Use Static DNS'))
+        self.chkbox_global_dns = Gtk.CheckButton(_('Use global DNS servers'))
+        self.hbox_dns = Gtk.HBox(False, 0)
+        self.hbox_dns.pack_start(self.chkbox_static_dns, True, True, 0)
+        self.hbox_dns.pack_start(self.chkbox_global_dns, True, True, 0)
 
         # Set up the script settings button
-        self.script_button = gtk.Button()
-        script_image = gtk.Image()
-        script_image.set_from_stock(gtk.STOCK_EXECUTE, 4)
+        self.script_button = Gtk.Button()
+        script_image = Gtk.Image()
+        script_image.set_from_stock(Gtk.STOCK_EXECUTE, 4)
         script_image.set_padding(4, 0)
         #self.script_button.set_alignment(.5, .5)
         self.script_button.set_image(script_image)
         self.script_button.set_label(_('Scripts'))
 
-        self.button_hbox = gtk.HBox(False, 2)
-        self.button_hbox.pack_start(
-            self.script_button, fill=False, expand=False)
+        self.button_hbox = Gtk.HBox(False, 2)
+        self.button_hbox.pack_start(self.script_button, False, False, 0)
         self.button_hbox.show()
 
-        self.swindow = gtk.ScrolledWindow()
-        self.swindow.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
-        self.viewport = gtk.Viewport()
-        self.viewport.set_shadow_type(gtk.SHADOW_NONE)
-        self.cvbox = gtk.VBox()
+        self.swindow = Gtk.ScrolledWindow()
+        self.swindow.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        self.viewport = Gtk.Viewport()
+        self.viewport.set_shadow_type(Gtk.ShadowType.NONE)
+        self.cvbox = Gtk.VBox()
         self.viewport.add(self.cvbox)
         self.swindow.add(self.viewport)
         # pylint: disable-msg=E1101
-        self.vbox.pack_start(self.swindow)
+        self.vbox.pack_start(self.swindow, False, False, 10)
 
-        assert(isinstance(self.cvbox, gtk.VBox))
-        self.cvbox.pack_start(self.chkbox_static_ip, fill=False, expand=False)
-        self.cvbox.pack_start(self.txt_ip, fill=False, expand=False)
-        self.cvbox.pack_start(self.txt_netmask, fill=False, expand=False)
-        self.cvbox.pack_start(self.txt_gateway, fill=False, expand=False)
-        self.cvbox.pack_start(self.hbox_dns, fill=False, expand=False)
-        self.cvbox.pack_start(self.txt_domain, fill=False, expand=False)
-        self.cvbox.pack_start(self.txt_search_dom, fill=False, expand=False)
-        self.cvbox.pack_start(self.txt_dns_1, fill=False, expand=False)
-        self.cvbox.pack_start(self.txt_dns_2, fill=False, expand=False)
-        self.cvbox.pack_start(self.txt_dns_3, fill=False, expand=False)
-        self.cvbox.pack_start(dhcp_hostname_hbox, fill=False, expand=False)
-        self.cvbox.pack_end(
-            self.button_hbox, fill=False, expand=False, padding=5)
+        assert(isinstance(self.cvbox, Gtk.VBox))
+        self.cvbox.pack_start(self.chkbox_static_ip, False, False, 0)
+        self.cvbox.pack_start(self.txt_ip, False, False, 0)
+        self.cvbox.pack_start(self.txt_netmask, False, False, 0)
+        self.cvbox.pack_start(self.txt_gateway, False, False, 0)
+        self.cvbox.pack_start(self.hbox_dns, False, False, 0)
+        self.cvbox.pack_start(self.txt_domain, False, False, 0)
+        self.cvbox.pack_start(self.txt_search_dom, False, False, 0)
+        self.cvbox.pack_start(self.txt_dns_1, False, False, 0)
+        self.cvbox.pack_start(self.txt_dns_2, False, False, 0)
+        self.cvbox.pack_start(self.txt_dns_3, False, False, 0)
+        self.cvbox.pack_start(dhcp_hostname_hbox, False, False, 0)
+        self.cvbox.pack_end(self.button_hbox, False, False, 5)
 
         # Connect the events to the actions
         self.chkbox_static_ip.connect("toggled", self.toggle_ip_checkbox)
@@ -160,7 +158,7 @@ class AdvancedSettingsDialog(gtk.Dialog):
     def set_default_size(self):
         """ Set default window size. """
         width, height = self.get_size()
-        s_height = gtk.gdk.screen_height()
+        s_height = Gtk.Window().get_screen().height()
         if s_height < 768:
             height = s_height * .75
         else:
@@ -348,7 +346,7 @@ class AdvancedSettingsDialog(gtk.Dialog):
                 else:
                     box = LabelEntry(field_text)
 
-                self.vbox_encrypt_info.pack_start(box)
+                self.vbox_encrypt_info.pack_start(box, True, True, 0)
                 # Add the data to a dict, so that the information
                 # can be easily accessed by giving the name of the wanted
                 # data.
@@ -376,10 +374,10 @@ class WiredSettingsDialog(AdvancedSettingsDialog):
         ## This section is largely copied from WirelessSettingsDialog, but with
         ## some changes
         # Set up encryption stuff
-        self.combo_encryption = gtk.combo_box_new_text()
-        self.chkbox_encryption = gtk.CheckButton(_('Use Encryption'))
+        self.combo_encryption = Gtk.combo_box_new_text()
+        self.chkbox_encryption = Gtk.CheckButton(_('Use Encryption'))
         # Make the vbox to hold the encryption stuff.
-        self.vbox_encrypt_info = gtk.VBox(False, 0)
+        self.vbox_encrypt_info = Gtk.VBox(False, 0)
         self.chkbox_encryption.set_active(
             bool(wired.GetWiredProperty('encryption_enabled')))
         self.combo_encryption.set_sensitive(False)
@@ -392,9 +390,9 @@ class WiredSettingsDialog(AdvancedSettingsDialog):
         self.change_encrypt_method()
         self.toggle_encryption()
 
-        self.cvbox.pack_start(self.chkbox_encryption, False, False)
-        self.cvbox.pack_start(self.combo_encryption, False, False)
-        self.cvbox.pack_start(self.vbox_encrypt_info, False, False)
+        self.cvbox.pack_start(self.chkbox_encryption, False, False, 0)
+        self.cvbox.pack_start(self.combo_encryption, False, False, 0)
+        self.cvbox.pack_start(self.vbox_encrypt_info, False, False, 0)
 
         # Connect signals.
         self.chkbox_encryption.connect("toggled", self.toggle_encryption)
@@ -465,14 +463,14 @@ class WiredSettingsDialog(AdvancedSettingsDialog):
             self.chkbox_encryption.get_active()
         )
         if self.chkbox_encryption.get_active():
-            print "setting encryption info..."
+            print("setting encryption info...")
             encrypt_methods = self.encrypt_types
             self.set_net_prop(
                 "enctype",
                 encrypt_methods[self.combo_encryption.get_active()]['type']
             )
             # Make sure all required fields are filled in.
-            for entry_info in encrypt_info.itervalues():
+            for entry_info in encrypt_info.values():
                 if entry_info[0].entry.get_text() == "" and \
                    entry_info[1] == 'required':
                     error(
@@ -484,11 +482,11 @@ class WiredSettingsDialog(AdvancedSettingsDialog):
                     )
                     return False
             # Now save all the entries.
-            for entry_key, entry_info in encrypt_info.iteritems():
+            for entry_key, entry_info in encrypt_info.items():
                 self.set_net_prop(entry_key,
                                   noneToString(entry_info[0].entry.get_text()))
         else:
-            print "no encryption specified..."
+            print("no encryption specified...")
             self.set_net_prop("enctype", "None")
         AdvancedSettingsDialog.save_settings(self)
         wired.SaveWiredNetworkProfile(self.prof_name)
@@ -518,33 +516,33 @@ class WirelessSettingsDialog(AdvancedSettingsDialog):
 
         # Set up encryption stuff
         self.networkID = networkID
-        self.combo_encryption = gtk.combo_box_new_text()
-        self.chkbox_encryption = gtk.CheckButton(_('Use Encryption'))
-        self.chkbox_global_settings = gtk.CheckButton(
+        self.combo_encryption = Gtk.ComboBoxText()
+        self.chkbox_encryption = Gtk.CheckButton(_('Use Encryption'))
+        self.chkbox_global_settings = Gtk.CheckButton(
             _('Use these settings for all networks sharing this essid'))
 
-        rate_vbox = gtk.VBox(False, 0)
+        rate_vbox = Gtk.VBox(False, 0)
 
         self.combo_rate = LabelCombo(_('Wireless bitrate'))
-        rates = gtk.ListStore(str)
+        rates = Gtk.ListStore(str)
         self.bitrates = wireless.GetAvailableBitrates()
         self.bitrates.append('auto')
         for br in self.bitrates:
             rates.append((br,))
         self.combo_rate.set_model(rates)
-        self.chkbox_lower_rate = gtk.CheckButton(_('Allow lower bitrates'))
-        rate_vbox.pack_start(self.combo_rate)
-        rate_vbox.pack_start(self.chkbox_lower_rate)
+        self.chkbox_lower_rate = Gtk.CheckButton(_('Allow lower bitrates'))
+        rate_vbox.pack_start(self.combo_rate, True, True, 0)
+        rate_vbox.pack_start(self.chkbox_lower_rate, True, True, 0)
 
         # Make the vbox to hold the encryption stuff.
-        self.vbox_encrypt_info = gtk.VBox(False, 0)
+        self.vbox_encrypt_info = Gtk.VBox(False, 0)
         self.toggle_encryption()
         self.chkbox_encryption.set_active(False)
         self.combo_encryption.set_sensitive(False)
         self.encrypt_types = misc.LoadEncryptionMethods()
 
-        information_button = gtk.Button(stock=gtk.STOCK_INFO)
-        self.button_hbox.pack_start(information_button, False, False)
+        information_button = Gtk.Button(stock=Gtk.STOCK_INFO)
+        self.button_hbox.pack_start(information_button, False, False, 0)
         information_button.connect(
             'clicked',
             lambda *a, **k: WirelessInformationDialog(networkID, self)
@@ -567,11 +565,11 @@ class WirelessSettingsDialog(AdvancedSettingsDialog):
             self.combo_encryption.set_active(0)
         self.change_encrypt_method()
 
-        self.cvbox.pack_start(rate_vbox, False, False)
-        self.cvbox.pack_start(self.chkbox_global_settings, False, False)
-        self.cvbox.pack_start(self.chkbox_encryption, False, False)
-        self.cvbox.pack_start(self.combo_encryption, False, False)
-        self.cvbox.pack_start(self.vbox_encrypt_info, False, False)
+        self.cvbox.pack_start(rate_vbox, False, False, 0)
+        self.cvbox.pack_start(self.chkbox_global_settings, False, False, 0)
+        self.cvbox.pack_start(self.chkbox_encryption, False, False, 0)
+        self.cvbox.pack_start(self.combo_encryption, False, False, 0)
+        self.cvbox.pack_start(self.vbox_encrypt_info, False, False, 0)
 
         # Connect signals.
         self.chkbox_encryption.connect("toggled", self.toggle_encryption)
@@ -682,14 +680,14 @@ class WirelessSettingsDialog(AdvancedSettingsDialog):
         # Check encryption info
         encrypt_info = self.encryption_info
         if self.chkbox_encryption.get_active():
-            print "setting encryption info..."
+            print("setting encryption info...")
             encrypt_methods = self.encrypt_types
             self.set_net_prop(
                 "enctype",
                 encrypt_methods[self.combo_encryption.get_active()]['type']
             )
             # Make sure all required fields are filled in.
-            for entry_info in encrypt_info.itervalues():
+            for entry_info in encrypt_info.values():
                 if entry_info[0].entry.get_text() == "" and \
                    entry_info[1] == 'required':
                     error(
@@ -701,7 +699,7 @@ class WirelessSettingsDialog(AdvancedSettingsDialog):
                     )
                     return False
             # Now save all the entries.
-            for entry_key, entry_info in encrypt_info.iteritems():
+            for entry_key, entry_info in encrypt_info.items():
                 self.set_net_prop(entry_key,
                                   noneToString(entry_info[0].entry.get_text()))
         elif not self.chkbox_encryption.get_active() and \
@@ -710,7 +708,7 @@ class WirelessSettingsDialog(AdvancedSettingsDialog):
             error(self, _('This network requires encryption to be enabled.'))
             return False
         else:
-            print "no encryption specified..."
+            print("no encryption specified...")
             self.set_net_prop("enctype", "None")
         AdvancedSettingsDialog.save_settings(self)
 
@@ -739,7 +737,7 @@ class WirelessSettingsDialog(AdvancedSettingsDialog):
         return noneToBlankString(wireless.GetWirelessProperty(networkid, label))
 
 
-class NetworkEntry(gtk.HBox):
+class NetworkEntry(Gtk.HBox):
     """ Network entry. """
     def __init__(self):
         """ Base network entry class.
@@ -749,48 +747,48 @@ class NetworkEntry(gtk.HBox):
 
         """
         setup_dbus()
-        gtk.HBox.__init__(self, False, 2)
-        self.image = gtk.Image()
-        self.pack_start(self.image, False, False)
+        Gtk.HBox.__init__(self, False, 2)
+        self.image = Gtk.Image()
+        self.pack_start(self.image, False, False, 0)
 
         # Create an HBox to hold the buttons
-        self.buttons_hbox = gtk.HBox(False, 6)
+        self.buttons_hbox = Gtk.HBox(False, 6)
 
         # Set up the Connect button
-        self.connect_button = gtk.Button(stock=gtk.STOCK_CONNECT)
-        self.connect_hbox = gtk.HBox(False, 2)
-        self.connect_hbox.pack_start(self.connect_button, False, False)
+        self.connect_button = Gtk.Button(stock=Gtk.STOCK_CONNECT)
+        self.connect_hbox = Gtk.HBox(False, 2)
+        self.connect_hbox.pack_start(self.connect_button, False, False, 0)
         self.connect_hbox.show()
 
         # Set up the Disconnect button
-        self.disconnect_button = gtk.Button(stock=gtk.STOCK_DISCONNECT)
-        self.connect_hbox.pack_start(self.disconnect_button, False, False)
+        self.disconnect_button = Gtk.Button(stock=Gtk.STOCK_DISCONNECT)
+        self.connect_hbox.pack_start(self.disconnect_button, False, False, 0)
 
         # Create a label to hold the name of the entry
-        self.name_label = gtk.Label()
+        self.name_label = Gtk.Label()
         self.name_label.set_alignment(0, 0.5)
 
         # Set up the VBox that goes in the gtk.Expander
-        self.expander_vbox = gtk.VBox(False, 1)
+        self.expander_vbox = Gtk.VBox(False, 1)
         self.expander_vbox.show()
-        self.pack_end(self.expander_vbox)
+        self.pack_end(self.expander_vbox, True, True, 10)
 
         # Set up the advanced settings button
-        self.advanced_button = gtk.Button()
-        self.advanced_image = gtk.Image()
-        self.advanced_image.set_from_stock(gtk.STOCK_EDIT, 4)
+        self.advanced_button = Gtk.Button()
+        self.advanced_image = Gtk.Image()
+        self.advanced_image.set_from_stock(Gtk.STOCK_EDIT, 4)
         self.advanced_image.set_padding(4, 0)
         self.advanced_button.set_alignment(.5, .5)
         self.advanced_button.set_label(_('Properties'))
         self.advanced_button.set_image(self.advanced_image)
 
-        self.buttons_hbox.pack_start(self.connect_hbox, False, False)
-        self.buttons_hbox.pack_start(self.advanced_button, False, False)
+        self.buttons_hbox.pack_start(self.connect_hbox, False, False, 0)
+        self.buttons_hbox.pack_start(self.advanced_button, False, False, 0)
 
-        self.vbox_top = gtk.VBox(False, 0)
-        self.expander_vbox.pack_start(self.name_label)
-        self.expander_vbox.pack_start(self.vbox_top)
-        self.expander_vbox.pack_start(self.buttons_hbox)
+        self.vbox_top = Gtk.VBox(False, 0)
+        self.expander_vbox.pack_start(self.name_label, True, True, 0)
+        self.expander_vbox.pack_start(self.vbox_top, True, True, 0)
+        self.expander_vbox.pack_start(self.buttons_hbox, True, True, 0)
 
     def destroy_called(self, *args):
         """ Clean up everything. """
@@ -808,7 +806,7 @@ class WiredNetworkEntry(NetworkEntry):
         self.image.set_padding(0, 0)
         self.image.set_alignment(.5, .5)
         self.image.set_size_request(60, -1)
-        self.image.set_from_icon_name("wired-gui", gtk.ICON_SIZE_DND)
+        self.image.set_from_icon_name("wired-gui", Gtk.ICON_SIZE_DND)
         self.image.show()
         self.connect_button.show()
 
@@ -817,31 +815,31 @@ class WiredNetworkEntry(NetworkEntry):
 
         self.is_full_gui = True
 
-        self.button_add = gtk.Button(stock=gtk.STOCK_ADD)
-        self.button_delete = gtk.Button(stock=gtk.STOCK_DELETE)
-        self.profile_help = gtk.Label(
+        self.button_add = Gtk.Button(stock=Gtk.STOCK_ADD)
+        self.button_delete = Gtk.Button(stock=Gtk.STOCK_DELETE)
+        self.profile_help = Gtk.Label(
             _('To connect to a wired network, you must create a network '
             'profile. To create a network profile, type a name that describes '
             'this network, and press Add.')
         )
-        self.chkbox_default_profile = gtk.CheckButton(
+        self.chkbox_default_profile = Gtk.CheckButton(
             _('Use as default profile (overwrites any previous default)'))
-        self.combo_profile_names = gtk.combo_box_new_text()
+        self.combo_profile_names = Gtk.combo_box_new_text()
 
         # Format the profile help label.
-        self.profile_help.set_justify(gtk.JUSTIFY_LEFT)
+        self.profile_help.set_justify(Gtk.JUSTIFY_LEFT)
         self.profile_help.set_line_wrap(True)
 
         # Pack the various VBox objects.
-        self.hbox_temp = gtk.HBox(False, 0)
-        self.hbox_def = gtk.HBox(False, 0)
-        self.vbox_top.pack_start(self.profile_help, True, True)
-        self.vbox_top.pack_start(self.hbox_def)
-        self.vbox_top.pack_start(self.hbox_temp)
-        self.hbox_temp.pack_start(self.combo_profile_names, True, True)
-        self.hbox_temp.pack_start(self.button_add, False, False)
-        self.hbox_temp.pack_start(self.button_delete, False, False)
-        self.hbox_def.pack_start(self.chkbox_default_profile, False, False)
+        self.hbox_temp = Gtk.HBox(False, 0)
+        self.hbox_def = Gtk.HBox(False, 0)
+        self.vbox_top.pack_start(self.profile_help, True, True, 0)
+        self.vbox_top.pack_start(self.hbox_def, True, True, 0)
+        self.vbox_top.pack_start(self.hbox_temp, True, True, 0)
+        self.hbox_temp.pack_start(self.combo_profile_names, True, True, 0)
+        self.hbox_temp.pack_start(self.button_add, False, False, 0)
+        self.hbox_temp.pack_start(self.button_delete, False, False, 0)
+        self.hbox_def.pack_start(self.chkbox_default_profile, False, False, 0)
 
         # Connect events
         self.button_add.connect("clicked", self.add_profile)
@@ -861,7 +859,7 @@ class WiredNetworkEntry(NetworkEntry):
                     starting_index = x
             self.combo_profile_names.set_active(starting_index)
         else:
-            print "no wired profiles found"
+            print("no wired profiles found")
             self.profile_help.show()
 
         self.advanced_dialog = \
@@ -942,7 +940,7 @@ class WiredNetworkEntry(NetworkEntry):
 
     def remove_profile(self, widget):
         """ Remove a profile from the profile list. """
-        print "removing profile"
+        print("removing profile")
         profile_name = self.combo_profile_names.get_active_text()
         wired.DeleteWiredNetworkProfile(profile_name)
         self.combo_profile_names.remove_text(self.combo_profile_names.
@@ -1010,10 +1008,10 @@ class WirelessNetworkEntry(NetworkEntry):
         self.lbl_encryption = GreyLabel()
         self.lbl_channel = GreyLabel()
 
-        print "ESSID : " + self.essid
-        self.chkbox_autoconnect = gtk.CheckButton(
+        print("ESSID : " + self.essid)
+        self.chkbox_autoconnect = Gtk.CheckButton(
             _('Automatically connect to this network'))
-        self.chkbox_neverconnect = gtk.CheckButton(
+        self.chkbox_neverconnect = Gtk.CheckButton(
             _('Never connect to this network'))
 
         self.set_signal_strength(
@@ -1036,8 +1034,8 @@ class WirelessNetworkEntry(NetworkEntry):
         )
         # Add the wireless network specific parts to the NetworkEntry
         # VBox objects.
-        self.vbox_top.pack_start(self.chkbox_autoconnect, False, False)
-        self.vbox_top.pack_start(self.chkbox_neverconnect, False, False)
+        self.vbox_top.pack_start(self.chkbox_autoconnect, False, False, 0)
+        self.vbox_top.pack_start(self.chkbox_neverconnect, False, False, 0)
 
         if to_bool(self.format_entry(networkID, "automatic")):
             self.chkbox_autoconnect.set_active(True)
@@ -1157,7 +1155,7 @@ class WirelessNetworkEntry(NetworkEntry):
                 signal_img = 'signal-25'
             ending = "%"
             disp_strength = str(strength)
-        self.image.set_from_icon_name(signal_img, gtk.ICON_SIZE_DND)
+        self.image.set_from_icon_name(signal_img, Gtk.IconSize.DND)
         self.lbl_strength.set_label(disp_strength + ending)
         self.image.show()
 
@@ -1179,23 +1177,23 @@ class WirelessNetworkEntry(NetworkEntry):
         return noneToBlankString(wireless.GetWirelessProperty(networkid, label))
 
 
-class WirelessInformationDialog(gtk.Dialog):
+class WirelessInformationDialog(Gtk.Dialog):
     """ Wireless information dialog. """
     def __init__(self, networkID, parent):
-        gtk.Dialog.__init__(self, parent=parent)
+        Gtk.Dialog.__init__(self, parent=parent)
 
         # Make the combo box.
-        self.lbl_strength = gtk.Label()
+        self.lbl_strength = Gtk.Label()
         self.lbl_strength.set_alignment(0, 0.5)
-        self.lbl_encryption = gtk.Label()
+        self.lbl_encryption = Gtk.Label()
         self.lbl_encryption.set_alignment(0, 0.5)
-        self.lbl_mac = gtk.Label()
+        self.lbl_mac = Gtk.Label()
         self.lbl_mac.set_alignment(0, 0.5)
-        self.lbl_channel = gtk.Label()
+        self.lbl_channel = Gtk.Label()
         self.lbl_channel.set_alignment(0, 0.5)
-        self.lbl_mode = gtk.Label()
+        self.lbl_mode = Gtk.Label()
         self.lbl_mode.set_alignment(0, 0.5)
-        self.hbox_status = gtk.HBox(False, 5)
+        self.hbox_status = Gtk.HBox(False, 5)
 
         # Set the values of the network info labels.
         self.set_signal_strength(
@@ -1213,10 +1211,10 @@ class WirelessInformationDialog(gtk.Dialog):
         self.set_title('Network Information')
         vbox = self.vbox
         self.set_has_separator(False)
-        table = gtk.Table(5, 2)
+        table = Gtk.Table(5, 2)
         table.set_col_spacings(12)
         # pylint: disable-msg=E1101
-        vbox.pack_start(table)
+        vbox.pack_start(table, True, True, 0)
 
         # Pack the network status HBox.
         table.attach(LeftAlignedLabel('Signal strength:'), 0, 1, 0, 1)
@@ -1237,7 +1235,7 @@ class WirelessInformationDialog(gtk.Dialog):
         # pylint: disable-msg=E1101
         vbox.show_all()
 
-        self.add_button(gtk.STOCK_CLOSE, gtk.RESPONSE_CLOSE)
+        self.add_button(Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE)
         self.show()
         self.run()
         self.destroy()
